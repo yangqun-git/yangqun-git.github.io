@@ -106,3 +106,7 @@ deploy:
   repo: git@github.com:yangqun-git/yangqun-git.github.io.git
   branch: master
   message: Site updated {{ now('YYYY-MM-DD HH:mm:ss') }}
+
+permalink_pinyin:
+  enable: true
+  separator: '-' # default: '-'
