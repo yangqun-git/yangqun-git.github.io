@@ -14,14 +14,14 @@ tags:
 > jdk： 1.8.0_341
 > macOs 64位
 
-## 介绍
+# 介绍
 `ArrayList`是`List`接口的一个实现，内部基于**数组**数据结构存储数据；随着元素被添加到`ArrayList`，它的容量会自动增长，也就是说`ArrayList`的容量是可以动态调整的，当空间不够用时，默认增加容量的50%。
 
 在性能方面，`size, isEmpty, get, set, iterator, and listIterator`等操作总是run in constant time（即O(1)）；`add`操作则是amortized constant time，也就是说，添加1个元素需要O(1)的时间，添加n个元素就需要O(n)的时间。对于剩下的其它操作，粗略来讲都是linear time(O(n))。
 
 `ArrayList`不能保证线程安全，如果要在多线程环境下使用`ArrayList`，则应该使用`Vector`或`Collections.synchronizedList(new ArrayList(...));`。
 
-## 关键属性
+# 关键属性
 
 以下是和扩容相关的一些属性：
 
@@ -56,9 +56,9 @@ public class ArrayList<E> extends AbstractList<E>
      */
     private static final Object[] EMPTY_ELEMENTDATA = {};
 }
-````
-## 源码分析
-### add方法
+```
+# 源码分析
+## add方法
 ```java
 public boolean add(E e) {
     // 确保容量，如果容量不够先扩容
@@ -96,7 +96,7 @@ private void ensureExplicitCapacity(int minCapacity) {
 }
 ```
 
-### grow扩容方法
+## grow扩容方法
 ```java
 private void ensureExplicitCapacity(int minCapacity) {
     modCount++;
@@ -141,7 +141,7 @@ private static int hugeCapacity(int minCapacity) {
 1. 为什么不直接把`MAX_ARRAY_SIZE`设置为`Integer.MAX_VALUE`，非要等到`newCapacity`大于`MAX_ARRAY_SIZE`时才扩容至`Integer.MAX_VALUE`？
 2. 源码中注释`overflow-conscious code`想表达什么意思？以及为什么用`a - b > 0`，而不用`a > b`？
 
-#### MAX_ARRAY_SIZE
+### MAX_ARRAY_SIZE
 
 先来看第一个问题：通常情况下，`ArrayList`不会返回大于`MAX_ARRAY_SIZE`的容量，除非给定的`minCapacity`大于`MAX_ARRAY_SIZE`。
 
@@ -154,7 +154,7 @@ Object[] arr = new Object[Integer.MAX_VALUE];
 Object[] arr = new Object[Integer.MAX_VALUE - 8];
 // 异常：java.lang.OutOfMemoryError: Java heap space。 -- jvm不会限制，尝试分配内存结果堆溢出。
 ```
-#### overflow-conscious code 与 a - b > 0
+### overflow-conscious code 与 a - b > 0
 
 ```java
 // 此示例代码引自参考目录编号2的文章。
@@ -301,7 +301,7 @@ public Object[] toArray() {
 到此扩容方法就讲完了，内容如果有问题，也希望大佬们不吝赐教，共同进步。
 
 
-## 参考目录
+# 参考目录
 1: [Java SE API Documentation](https://docs.oracle.com/javase/8/docs/api/index.html)
 
 2: [Difference between if (a - b < 0) and if (a < b)](https://stackoverflow.com/questions/33147339/difference-between-if-a-b-0-and-if-a-b/33147610#33147610)
