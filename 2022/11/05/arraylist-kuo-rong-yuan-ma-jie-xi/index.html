@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    
+
+<script>!function(){var e=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,t=localStorage.getItem("use-color-scheme")||"auto";("dark"===t||e&&"light"!==t)&&document.documentElement.classList.toggle("dark",!0)}()</script>
+
+<meta charset="utf-8" >
+
+<title>ArrayList扩容源码解析</title>
+<meta name="keywords" content="ArrayList扩容源码解析, yangqunjava">
+<meta name="description" content="ArrayList#grow扩容源码解析、ArrayList#add方法解析、ArrayList overflow-conscious code">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="stylesheet" href="/style/main.css">
+
+
+<link rel="stylesheet" href="/style/jquery.fancybox.min.css">
+
+
+
+
+
+
+
+  <meta name="generator" content="Hexo 6.3.0"></head>
+  <body>
+    <div id="app" class="main">
+
+<div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://yangqun-git.github.io">
+        <img class="avatar" src="/images/avatar.png" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://yangqun-git.github.io">
+        <h1 class="site-title">yangqunjava</h1>
+      </a>
+    </div>
+    <div class="right">
+        <i class="icon menu-switch icon-menu-outline" ></i>
+    </div>
+  </div>
+</div>
+
+<div class="menu-container" style="height: 0;opacity: 0;">
+<nav class="menu-list">
+  
+    
+      <a href="/" class="menu purple-link">
+        首页
+      </a>
+    
+  
+    
+      <a href="/tags" class="menu purple-link">
+        标签
+      </a>
+    
+  
+    
+      <a href="/archives" class="menu purple-link">
+        归档
+      </a>
+    
+  
+    
+      <a href="/about" class="menu purple-link">
+        关于
+      </a>
+    
+  
+</nav>
+</div>
+
+
+
+  <div class="content-container">
+    <div class="post-detail">
+      
+      <h2 class="post-title">ArrayList扩容源码解析</h2>
+      <div class="post-info post-detail-info">
+        <span><i class="icon icon-calendar-outline"></i> 2022-11-05</span>
+        
+          <span>
+          <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="/tags/ArrayList/">
+              ArrayList
+                
+                  ，
+                
+              </a>
+            
+              <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+              源码分析
+                
+              </a>
+            
+          </span>
+        
+      </div>
+      <div class="post-content-wrapper">
+        <div class="post-content">
+          <blockquote>
+<p>环境信息<br>jdk： 1.8.0_341<br>macOs 64位</p>
+</blockquote>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p><code>ArrayList</code>是<code>List</code>接口的一个实现，内部基于<strong>数组</strong>数据结构存储数据；随着元素被添加到<code>ArrayList</code>，它的容量会自动增长，也就是说<code>ArrayList</code>的容量是可以动态调整的，当空间不够用时，默认增加容量的50%。</p>
+<p>在性能方面，<code>size, isEmpty, get, set, iterator, and listIterator</code>等操作总是run in constant time（即O(1)）；<code>add</code>操作则是amortized constant time，也就是说，添加1个元素需要O(1)的时间，添加n个元素就需要O(n)的时间。对于剩下的其它操作，粗略来讲都是linear time(O(n))。</p>
+<p><code>ArrayList</code>不能保证线程安全，如果要在多线程环境下使用<code>ArrayList</code>，则应该使用<code>Vector</code>或<code>Collections.synchronizedList(new ArrayList(...));</code>。</p>
+<h2 id="关键属性"><a href="#关键属性" class="headerlink" title="关键属性"></a>关键属性</h2><p>以下是和扩容相关的一些属性：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ArrayList</span>&lt;E&gt; <span class="keyword">extends</span> <span class="title class_">AbstractList</span>&lt;E&gt;</span><br><span class="line">        <span class="keyword">implements</span> <span class="title class_">List</span>&lt;E&gt;, RandomAccess, Cloneable, java.io.Serializable</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 真正用来存储元素的数组，ArrayList的capacity就是这个数组的长度。</span></span><br><span class="line"><span class="comment">     * 注：ArrayList没有capacity这个属性，代码中以elementData.length代表capacity。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> Object[] elementData;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 仅使用无参构造器后，添加第一个元素时，容量会默认扩展为10。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">DEFAULT_CAPACITY</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * ArrayList内已有元素的个数。</span></span><br><span class="line"><span class="comment">     * capacity是ArrayList能存放的最大元素个数；size是已有的实际个数。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> size;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 使用无参构造器时，elementData会被初始化为DEFAULTCAPACITY_EMPTY_ELEMENTDATA，之后添加元素时代码会</span></span><br><span class="line"><span class="comment">     * 判断element == DEFAULTCAPACITY_EMPTY_ELEMENTDATA，决定是否扩展至DEFAULT_CAPACITY。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 使用有参构造器时，如果传入的初始容量为0或传入空Collection，element会被赋值为EMPTY_ELEMENTDATA。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line">&#125;</span><br><span class="line">````</span><br><span class="line">## 源码分析</span><br><span class="line">### add方法</span><br><span class="line">```java</span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">add</span><span class="params">(E e)</span> &#123;</span><br><span class="line">    <span class="comment">// 确保容量，如果容量不够先扩容</span></span><br><span class="line">    ensureCapacityInternal(size + <span class="number">1</span>);</span><br><span class="line">    <span class="comment">// size初始值为0，当调用add时将该元素放到index为0的位置。之后size++为1，代表当前ArryList内元素个数为1，且下次添加元素的index为1。</span></span><br><span class="line">    elementData[size++] = e;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>往下看<code>ensureCapacityInternal</code>的内容：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * minCapacity：代表当前数组至少也要有这个容量才可以，否则就扩容。</span></span><br><span class="line"><span class="comment"> *  如果调用方时`add(E e)`方法，则`minCapacity`传入值为当前`size + 1`;</span></span><br><span class="line"><span class="comment"> *  如果调用方为`addAll(Collection c)`，`minCapacity`则为`size + c.size()`。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">ensureCapacityInternal</span><span class="params">(<span class="type">int</span> minCapacity)</span> &#123;</span><br><span class="line">    ensureExplicitCapacity(calculateCapacity(elementData, minCapacity));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">calculateCapacity</span><span class="params">(Object[] elementData, <span class="type">int</span> minCapacity)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) &#123;</span><br><span class="line">        <span class="keyword">return</span> Math.max(DEFAULT_CAPACITY, minCapacity);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> minCapacity;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">ensureExplicitCapacity</span><span class="params">(<span class="type">int</span> minCapacity)</span> &#123;</span><br><span class="line">    modCount++;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// `minCapacity`大于`ArrayList`的容量时需要扩容。</span></span><br><span class="line">    <span class="keyword">if</span> (minCapacity - elementData.length &gt; <span class="number">0</span>)</span><br><span class="line">      	<span class="comment">// 扩容</span></span><br><span class="line">        grow(minCapacity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="grow扩容方法"><a href="#grow扩容方法" class="headerlink" title="grow扩容方法"></a>grow扩容方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">ensureExplicitCapacity</span><span class="params">(<span class="type">int</span> minCapacity)</span> &#123;</span><br><span class="line">    modCount++;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// overflow-conscious code</span></span><br><span class="line">    <span class="keyword">if</span> (minCapacity - elementData.length &gt; <span class="number">0</span>)</span><br><span class="line">      	<span class="comment">// 扩容</span></span><br><span class="line">        grow(minCapacity);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MAX_ARRAY_SIZE</span> <span class="operator">=</span> Integer.MAX_VALUE - <span class="number">8</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">grow</span><span class="params">(<span class="type">int</span> minCapacity)</span> &#123;</span><br><span class="line">    <span class="comment">// overflow-conscious code</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">oldCapacity</span> <span class="operator">=</span> elementData.length;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 容量增加50%，（oldCapacity &gt;&gt; 1）等于（oldCapacity / 2）</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">newCapacity</span> <span class="operator">=</span> oldCapacity + (oldCapacity &gt;&gt; <span class="number">1</span>);</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 如果容量增加50%仍不够用，则使用minCapacity作为新容量。</span></span><br><span class="line">    <span class="keyword">if</span> (newCapacity - minCapacity &lt; <span class="number">0</span>)</span><br><span class="line">        newCapacity = minCapacity;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 如果newCapacity大于MAX_ARRAY_SIZE，则尝试为它分配MAX_ARRAY_SIZE或Integer.MAX_VALUE的大小。</span></span><br><span class="line">    <span class="keyword">if</span> (newCapacity - MAX_ARRAY_SIZE &gt; <span class="number">0</span>)</span><br><span class="line">        newCapacity = hugeCapacity(minCapacity);</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 创建一个大小为newCapacity的新数组，并将元素统统拷贝过去。</span></span><br><span class="line">    elementData = Arrays.copyOf(elementData, newCapacity);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">hugeCapacity</span><span class="params">(<span class="type">int</span> minCapacity)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (minCapacity &lt; <span class="number">0</span>) <span class="comment">// overflow</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">OutOfMemoryError</span>();</span><br><span class="line">    <span class="keyword">return</span> (minCapacity &gt; MAX_ARRAY_SIZE) ?</span><br><span class="line">        Integer.MAX_VALUE :</span><br><span class="line">        MAX_ARRAY_SIZE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>扩容代码里有几个细节需要我们注意：</p>
+<ol>
+<li>为什么不直接把<code>MAX_ARRAY_SIZE</code>设置为<code>Integer.MAX_VALUE</code>，非要等到<code>newCapacity</code>大于<code>MAX_ARRAY_SIZE</code>时才扩容至<code>Integer.MAX_VALUE</code>？</li>
+<li>源码中注释<code>overflow-conscious code</code>想表达什么意思？以及为什么用<code>a - b &gt; 0</code>，而不用<code>a &gt; b</code>？</li>
+</ol>
+<h4 id="MAX-ARRAY-SIZE"><a href="#MAX-ARRAY-SIZE" class="headerlink" title="MAX_ARRAY_SIZE"></a>MAX_ARRAY_SIZE</h4><p>先来看第一个问题：通常情况下，<code>ArrayList</code>不会返回大于<code>MAX_ARRAY_SIZE</code>的容量，除非给定的<code>minCapacity</code>大于<code>MAX_ARRAY_SIZE</code>。</p>
+<p>原因是因为现在很多JVM的实现(例如常用的hotspot)对申请大小为Integer.MAX_VALUE的数组有限制，会抛出<code>OutOfMemoryError(&quot;Requested array size exceeds VM limit&quot;) </code>异常。这个限制值的大小取决于JVM实现的特征，例如对象头大小。所有的JVM的实现最大就限制到了<code>Integer.MAX_VALUE - 8</code>，所以JDK保守的选择了最大值8来应对遇到的所有限制。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Object[] arr = <span class="keyword">new</span> <span class="title class_">Object</span>[Integer.MAX_VALUE];</span><br><span class="line"><span class="comment">// 异常：java.lang.OutOfMemoryError: Requested array size exceeds VM limit。-- jvm会直接限制住。</span></span><br><span class="line">        </span><br><span class="line">Object[] arr = <span class="keyword">new</span> <span class="title class_">Object</span>[Integer.MAX_VALUE - <span class="number">8</span>];</span><br><span class="line"><span class="comment">// 异常：java.lang.OutOfMemoryError: Java heap space。 -- jvm不会限制，尝试分配内存结果堆溢出。</span></span><br></pre></td></tr></table></figure>
+<h4 id="overflow-conscious-code-与-a-b-gt-0"><a href="#overflow-conscious-code-与-a-b-gt-0" class="headerlink" title="overflow-conscious code 与 a - b &gt; 0"></a>overflow-conscious code 与 a - b &gt; 0</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 此示例代码引自参考目录编号2的文章。</span></span><br><span class="line"><span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> Integer.MAX_VALUE;</span><br><span class="line"><span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> Integer.MIN_VALUE;</span><br><span class="line"><span class="keyword">if</span> (a &lt; b) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;a &lt; b&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (a - b &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;a - b &lt; 0&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上面这个例子中，控制台会打印<code>a - b &lt; 0</code>。显然，<code>a &lt; b</code>是错误的。而<code>a - b</code>发生了溢出，结果为-1，所以会打印出<code>a - b &lt; 0</code>。</p>
+<p>在jdk7就存在由这个问题导致的bug，我们不妨看下jdk7的扩容源码。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// jdk 7 源码</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">add</span><span class="params">(E e)</span> &#123;</span><br><span class="line">    ensureCapacity(size + <span class="number">1</span>);</span><br><span class="line">    elementData[size++] = e;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">ensureCapacity</span><span class="params">(<span class="type">int</span> minCapacity)</span> &#123;</span><br><span class="line">    modCount++;</span><br><span class="line">    <span class="type">int</span> <span class="variable">oldCapacity</span> <span class="operator">=</span> elementData.length;</span><br><span class="line">    <span class="keyword">if</span> (minCapacity &gt; oldCapacity) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">newCapacity</span> <span class="operator">=</span> (oldCapacity * <span class="number">3</span>)/<span class="number">2</span> + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (newCapacity &lt; minCapacity)</span><br><span class="line">            newCapacity = minCapacity;</span><br><span class="line">        elementData = Arrays.copyOf(elementData, newCapacity);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个BUG很容易重现：假设当前的<code>capacity</code>至少为  <code>Integer.MAX_VALUE</code>的三分之二，则<code>(oldCapacity * 3)/2 + 1</code>的结果会溢出为负数，此时<code>newCapacity &lt; minCapacity</code>为<code>true</code>，<code>newCapacity</code>被设置为<code>minCapacity</code>。那这样会造成什么问题呢？</p>
+<p>在这种情况调用<code>add</code>方法，<code>capacity</code>只会+1，而不是增加50%，而且每次<code>add</code>操作都会触发扩容导致性能下降(Arrays.copyOf)。</p>
+<hr>
+<p>理解了上面后，我们再看JDK8的<code>grow</code>方法 ，为了方便阅读，我把代码再贴一次。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">ensureExplicitCapacity</span><span class="params">(<span class="type">int</span> minCapacity)</span> &#123;</span><br><span class="line">    modCount++;</span><br><span class="line">    <span class="keyword">if</span> (minCapacity - elementData.length &gt; <span class="number">0</span>)</span><br><span class="line">        grow(minCapacity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在<code>ensureExplicitCapacity</code>方法里，需要注意的是入参<code>minCapacity</code>可能已经溢出为负数。无论<code>minCapacity</code>是真的大于<code>elementData.length</code>，或是溢出后与<code>elementData.length</code>相减再溢出为正数，都会进入到<code>grow</code>方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">grow</span><span class="params">(<span class="type">int</span> minCapacity)</span> &#123;</span><br><span class="line">    <span class="comment">// overflow-conscious code</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">oldCapacity</span> <span class="operator">=</span> elementData.length;</span><br><span class="line">  </span><br><span class="line">    <span class="type">int</span> <span class="variable">newCapacity</span> <span class="operator">=</span> oldCapacity + (oldCapacity &gt;&gt; <span class="number">1</span>);    -----代码①</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (newCapacity - minCapacity &lt; <span class="number">0</span>)    ----- 代码②</span><br><span class="line">        newCapacity = minCapacity;		----- 代码③</span><br><span class="line">          </span><br><span class="line">    <span class="keyword">if</span> (newCapacity - MAX_ARRAY_SIZE &gt; <span class="number">0</span>)   ----- 代码④</span><br><span class="line">        newCapacity = hugeCapacity(minCapacity);</span><br><span class="line">  </span><br><span class="line">    elementData = Arrays.copyOf(elementData, newCapacity);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">hugeCapacity</span><span class="params">(<span class="type">int</span> minCapacity)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (minCapacity &lt; <span class="number">0</span>) <span class="comment">// overflow</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">OutOfMemoryError</span>();</span><br><span class="line">    <span class="keyword">return</span> (minCapacity &gt; MAX_ARRAY_SIZE) ?</span><br><span class="line">        Integer.MAX_VALUE :</span><br><span class="line">        MAX_ARRAY_SIZE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果代码①处<code>newCapacity</code>溢出为负数，而且<code>minCapacity</code>是正数的话，代码②处会再次溢出为正数（因为minCapacity - elementData.length &gt; 0）。到代码④处，同样溢出为正数，最后会在<code>hugeCapacity</code>里返回<code>Integer.MAX_VALUE</code>或<code>MAX_ARRAY_SIZE</code>。</p>
+<p>当然，<code>minCapacity</code>也有可能是负数，在这个前提下，无论代码②处结果如何，代码④都会溢出为正数，然后在<code>hugeCapacity</code>抛出异常。</p>
+<blockquote>
+<p>以上两种情况都是在newCapacity溢出的前提下。</p>
+</blockquote>
+<p>但是！其实这里是有BUG的（JDK后续版本已修复），我们把代码精简如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">calculate</span><span class="params">(<span class="keyword">final</span> <span class="type">int</span> minCapacity, <span class="keyword">final</span> <span class="type">int</span> length)</span> &#123;</span><br><span class="line">	<span class="keyword">if</span> (minCapacity - length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="type">int</span> <span class="variable">oldCapacity</span> <span class="operator">=</span> length;</span><br><span class="line">		<span class="type">int</span> <span class="variable">newCapacity</span> <span class="operator">=</span> oldCapacity + (oldCapacity &gt;&gt; <span class="number">1</span>);</span><br><span class="line">		<span class="keyword">if</span> (newCapacity - minCapacity &lt; <span class="number">0</span>) &#123;</span><br><span class="line">			newCapacity = minCapacity;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (newCapacity - (Integer.MAX_VALUE - <span class="number">8</span>) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">			<span class="keyword">if</span> (minCapacity &lt; <span class="number">0</span>) &#123;</span><br><span class="line">				<span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">OutOfMemoryError</span>();</span><br><span class="line">			&#125;</span><br><span class="line">			newCapacity = minCapacity &gt; (Integer.MAX_VALUE - <span class="number">8</span>) ?</span><br><span class="line">				Integer.MAX_VALUE :</span><br><span class="line">				(Integer.MAX_VALUE - <span class="number">8</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> newCapacity;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> length;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当入参是<code>calculate((Integer.MAX_VALUE - 2) + (Integer.MAX_VALUE - 2), (Integer.MAX_VALUE - 2))</code>时，结果会返回-6。</p>
+<p>可以运行如下代码验证，代码抛出NegativeArraySizeException异常：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// -Xmx17g</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">  	<span class="comment">// Integer.MAX_VALUE - 4: hugeCapacity 抛出 OutOfMemoryError.</span></span><br><span class="line">		<span class="comment">// Integer.MAX_VALUE - 2 or - 3:，申请负数长度的数组，报错：NegativeArraySizeException</span></span><br><span class="line">		<span class="comment">// Integer.MAX_VALUE - 1: OutOfMemoryError: Requested array size exceeds VM limit</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> Integer.MAX_VALUE - <span class="number">2</span>;</span><br><span class="line">    ArrayList&lt;Object&gt; huge = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(size);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; size; i++)</span><br><span class="line">        huge.add(<span class="literal">null</span>);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        huge.addAll(huge);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (OutOfMemoryError e) &#123;</span><br><span class="line">      	e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面这个测试需要内存 &gt; 32g，可以改掉ArrayList的源码，这样内存只需要16g就可以了，改动如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object[] toArray() &#123;</span><br><span class="line">    <span class="keyword">return</span> Arrays.copyOf(elementData, size);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">改为</span><br><span class="line">  </span><br><span class="line"><span class="keyword">public</span> Object[] toArray() &#123;</span><br><span class="line">    <span class="keyword">return</span> elementData;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>到此扩容方法就讲完了，内容如果有问题，也希望大佬们不吝赐教，共同进步。</p>
+<h2 id="参考目录"><a href="#参考目录" class="headerlink" title="参考目录"></a>参考目录</h2><p>1: <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/api/index.html">Java SE API Documentation</a></p>
+<p>2: <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/33147339/difference-between-if-a-b-0-and-if-a-b/33147610#33147610">Difference between if (a - b &lt; 0) and if (a &lt; b)</a></p>
+
+        </div>
+        <div class="top-div">
+          <ol class="top-box"><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E4%BB%8B%E7%BB%8D"><span class="top-box-text">介绍</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%85%B3%E9%94%AE%E5%B1%9E%E6%80%A7"><span class="top-box-text">关键属性</span></a><ol class="top-box-child"><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#grow%E6%89%A9%E5%AE%B9%E6%96%B9%E6%B3%95"><span class="top-box-text">grow扩容方法</span></a></li></ol></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%8F%82%E8%80%83%E7%9B%AE%E5%BD%95"><span class="top-box-text">参考目录</span></a></li></ol>
+        </div>
+      </div>
+    </div>
+
+    
+  </div>
+
+
+
+
+<footer>
+<div class="site-footer">
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/yangqun-git" target="_blank">
+          <i class="icon icon-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  
+    Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> <a href="https://github.com/f-dong/hexo-theme-minimalism" target="_blank">Theme</a>
+  
+  
+  
+  
+  
+  
+</div>
+</footer>
+
+
+      </div>
+      
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.fancybox.min.js"></script>
+
+
+
+    <script>window.is_post = true;</script>
+
+
+<script src="/js/main.js"></script>
+
+
+
+
+
+    </div>
+  </body>
+</html>
+
