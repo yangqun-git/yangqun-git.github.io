@@ -50,7 +50,7 @@ gitalk:
   enable: true
   clientId: e452846c760e4f6fd6a7
   clientSecret: 9cd28d8b30dd90280f3adaa0fcd6ebc3309e97a3
-  repository: https://github.com/yangqun-git/gitalk
+  repository: gitalk
   owner: yangqun-git
   createIssueManually: true
 
