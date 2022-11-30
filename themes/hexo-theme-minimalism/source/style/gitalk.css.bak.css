@@ -850,9 +850,9 @@
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  border: 1px solid #1da57a;
+  border: 1px solid #6190e8;
   border-radius: 5px;
-  background-color: #1da57a;
+  background-color: #6190e8;
   color: #fff;
   outline: none;
   font-size: 0.75em;
@@ -930,7 +930,6 @@
 }
 .gt-container .gt-counts {
   margin: 0 0.625em 0 0;
-  color: #34a986;
 }
 .gt-container .gt-user {
   float: right;
@@ -1159,7 +1158,7 @@
 }
 .gt-container .gt-comment-username {
   font-weight: 500;
-  color: rgba(0,0,0,.45);
+  color: #6190e8;
   text-decoration: none;
 }
 .gt-container .gt-comment-username:hover {
@@ -1171,7 +1170,7 @@
 }
 .gt-container .gt-comment-date {
   margin-left: 0.5em;
-  color: #ccc;
+  color: #a1a1a1;
 }
 .gt-container .gt-comment-like,
 .gt-container .gt-comment-edit,
@@ -1226,7 +1225,7 @@
   display: block;
 }
 .gt-container .gt-comment-admin .gt-comment-content {
-  background-color: #f6f9fe00;
+  background-color: #f6f9fe;
 }
 @-webkit-keyframes gt-kf-rotate {
   0% {

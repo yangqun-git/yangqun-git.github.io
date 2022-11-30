@@ -3,7 +3,7 @@
   .post-title {
     font-size: 32px;
     margin: 24px 0;
-    color: #1da57a;
+    color: var(--c-base-black);
   }
   .post-detail-info {
     padding: 0 0 32px;
