@@ -876,15 +876,17 @@
   margin-right: 0;
 }
 .gt-container .gt-btn-preview {
+  /* 预览按钮的底颜色 */
   background-color: #fff;
+  /* 预览按钮的字颜色 */
   color: #1da57a;
 }
 .gt-container .gt-btn-preview:hover {
   background-color: #f2f2f2;
-  border-color: #1da57a;;
+  border-color: #1da57a;
 }
 .gt-container .gt-btn-public:hover {
-  background-color: #1da57a;;
+  background-color: #3dbf98;
   border-color: #f2f2f2;
 }
 .gt-container .gt-error {
