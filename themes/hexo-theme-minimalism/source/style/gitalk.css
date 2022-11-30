@@ -818,8 +818,8 @@
 }
 .gt-container .gt-avatar {
   display: inline-block;
-  width: 3.125em;
-  height: 3.125em;
+  width: 2.5em;
+  height: 2.5em;
 }
 @media (max-width: 479px) {
   .gt-container .gt-avatar {
