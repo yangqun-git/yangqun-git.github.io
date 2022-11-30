@@ -877,15 +877,15 @@
 }
 .gt-container .gt-btn-preview {
   background-color: #fff;
-  color: #6190e8;
+  color: #1da57a;
 }
 .gt-container .gt-btn-preview:hover {
   background-color: #f2f2f2;
-  border-color: #81a6ed;
+  border-color: #1da57a;;
 }
 .gt-container .gt-btn-public:hover {
-  background-color: #81a6ed;
-  border-color: #81a6ed;
+  background-color: #1da57a;;
+  border-color: #f2f2f2;
 }
 .gt-container .gt-error {
   text-align: center;
