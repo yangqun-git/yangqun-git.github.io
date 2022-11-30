@@ -8,9 +8,10 @@
 
 <meta charset="utf-8" >
 
-<title>yangqunjava</title>
-<meta name="keywords" content="yangqunjava, yangqunjava">
-<meta name="description" content="yangqunjava">
+<title>RocketMQMessageListener注解源码分析</title>
+<meta name="keywords" content="RocketMQMessageListener注解源码分析, yangqunjava">
+<meta name="description" content="待写
+">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -20,6 +21,8 @@
 
 <link rel="stylesheet" href="/style/jquery.fancybox.min.css">
 
+
+    <link rel="stylesheet" href="/style/gitalk.css" />
 
 
 
@@ -72,86 +75,40 @@
 
 
 
-<div class="content-container">
-
-  <div class="current-tag-container">
-    <h2 class="title">
-      <i class="icon icon-pricetags-outline"></i> 日记
-    </h2>
-  </div>
-
-  
-
-<section class="post-item">
-    <div class="content">
-      <a href="/2022/11/30/2022-11-30-ri-ji/">
-        <h2 class="post-title">2022-11-30日记</h2>
-      </a>
-      <a href="/2022/11/30/2022-11-30-ri-ji/">
-          <div class="post-abstract">
-            
-			    11月30。风小了些，但是依旧很冷。
-他们几个今天还是在群里讨论赔偿相关的话题，为了让自己不是太嫉妒，我把群先屏蔽了等过一阵再解除，眼不见心里的嫉妒就会少一些，哈～
-工作方面今天本来是打算把tob的工作做个总结的，但是刚动脑想从何总结起，手
-            
-          </div>
-      </a>
-      <div class="post-info">
+  <div class="content-container">
+    <div class="post-detail">
+      
+      <h2 class="post-title">RocketMQMessageListener注解源码分析</h2>
+      <div class="post-info post-detail-info">
         <span><i class="icon icon-calendar-outline"></i> 2022-11-30</span>
         
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="/tags/%E6%97%A5%E8%AE%B0/">
-                日记
-                
-              </a>
-            
-          </span>
-        
+      </div>
+      <div class="post-content-wrapper">
+        <div class="post-content">
+          <p>待写</p>
+
+        </div>
+        <div class="top-div">
+          
+        </div>
       </div>
     </div>
-  </section>
 
-
-
-<section class="post-item">
-    <div class="content">
-      <a href="/2022/11/29/2022-11-29-ri-ji/">
-        <h2 class="post-title">2022-11-29日记</h2>
-      </a>
-      <a href="/2022/11/29/2022-11-29-ri-ji/">
-          <div class="post-abstract">
-            
-			    11月29日。
-今天降温，天上多云且伴随着大风，很冷。中午的时候骑车出去买了个煎饼，一路上这手好像浸在雪里一样砭得肉疼，下午就没敢再出门去了。
-今天力码又谈了几个人要裁，宏洋、喜朋、燊磊他们赔偿都谈的不错，我心里稍微还是有点嫉妒的。想自己当
-            
-          </div>
-      </a>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2022-11-29</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="/tags/%E6%97%A5%E8%AE%B0/">
-                日记
-                
-              </a>
-            
-          </span>
-        
+    <!-- 
+      <div class="next-post">
+        <a class="purple-link" href="/2022/11/30/2022-11-30-ri-ji/">
+          <h3 class="post-title">
+            下一篇：2022-11-30日记
+          </h3>
+        </a>
       </div>
-    </div>
-  </section>
+     -->
+  </div>
 
 
+  <div id="gitalk-container"></div>
 
 
-
-
-</div>
 
 <footer>
 <div class="site-footer">
@@ -191,9 +148,31 @@
 
 
 
+    <script>window.is_post = true;</script>
+
 
 <script src="/js/main.js"></script>
 
+
+
+    <script src="/js/gitalk.min.js"></script>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'e452846c760e4f6fd6a7',
+    clientSecret: '9cd28d8b30dd90280f3adaa0fcd6ebc3309e97a3',
+    repo: 'gitalk',
+    owner: 'yangqun-git',
+    admin: ['yangqun-git'],
+    id: location.pathname.slice(1, location.pathname.lastIndexOf('/')).substring(0, 49),       // Ensure uniqueness and length less than 50
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    createIssueManually: true,
+  });
+
+  gitalk.render('gitalk-container')
+
+</script>
 
 
 
@@ -201,5 +180,4 @@
     </div>
   </body>
 </html>
-
 
