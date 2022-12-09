@@ -64,7 +64,7 @@ bottom_link:
     text: RSS
     class: rss
   icp:
-    url: beian.miit.gov.cn
+    url: https://beian.miit.gov.cn
     text: 京ICP备2022034565号
     class: icp
 
