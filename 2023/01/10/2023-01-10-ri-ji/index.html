@@ -8,9 +8,14 @@
 
 <meta charset="utf-8" >
 
-<title>yangqunjava</title>
-<meta name="keywords" content="yangqunjava, yangqunjava">
-<meta name="description" content="yangqunjava">
+<title>2023-01-10日记</title>
+<meta name="keywords" content="2023-01-10日记, yangqunjava">
+<meta name="description" content="青天见白月。
+昨天开始处理智和诚的bug，我真就真的听他所言，不处理完不睡觉。第一就干到了凌晨1点。
+今天可不能这么干了，实事求是就是干不完，催也没用。
+又不是什么着急的东西，一下压我工期压一半，离谱至极！
+
+今天早上本打算骑车子去公司的，">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -20,6 +25,8 @@
 
 <link rel="stylesheet" href="/style/jquery.fancybox.min.css">
 
+
+    <link rel="stylesheet" href="/style/gitalk.css" />
 
 
 
@@ -79,91 +86,54 @@
 
 
   <div class="content-container">
-
-    
-
-
-
-
-
-
-
-<section class="post-item">
-    <div class="content">
-      <a href="/2023/01/03/arraylist-iterator-yuan-ma-fen-xi-wei-shi-me-die-dai-qi-shan-chu-yuan-su-bu-hui-bao-cuo/">
-        <h2 class="post-title">ArrayList iterator源码分析，为什么迭代器删除元素不会报错</h2>
-      </a>
-      <a href="/2023/01/03/arraylist-iterator-yuan-ma-fen-xi-wei-shi-me-die-dai-qi-shan-chu-yuan-su-bu-hui-bao-cuo/">
-          <div class="post-abstract">
-            
-			    写这篇文章的原因要从前不久的一件事说起。
-有一天，朋友问我，“ArrayList遍历中删除元素会怎么样”？
-我当时脑子里第一想到的就是forEach这种循环方式，没多想就回答他：“当然会报错了。”
-朋友再问：“如果使用iterator迭代器
-            
-          </div>
-      </a>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2023-01-03</span>
+    <div class="post-detail">
+      
+      <h2 class="post-title">2023-01-10日记</h2>
+      <div class="post-info post-detail-info">
+        <span><i class="icon icon-calendar-outline"></i> 2023-01-10</span>
         
           <span>
-            <i class="icon icon-pricetags-outline"></i>
+          <i class="icon icon-pricetags-outline"></i>
             
-              <a href="/tags/ArrayList/">
-                ArrayList
-                
-                  ，
-                
-              </a>
-            
-              <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
-                源码分析
+              <a href="/tags/%E6%97%A5%E8%AE%B0/">
+              日记
                 
               </a>
             
           </span>
         
       </div>
-    </div>
-  </section>
+      <div class="post-content-wrapper">
+        <div class="post-content">
+          <p>青天见白月。</p>
+<p>昨天开始处理智和诚的bug，我真就真的听他所言，不处理完不睡觉。第一就干到了凌晨1点。</p>
+<p>今天可不能这么干了，实事求是就是干不完，催也没用。</p>
+<p>又不是什么着急的东西，一下压我工期压一半，离谱至极！</p>
+<hr>
+<p>今天早上本打算骑车子去公司的，在楼下戴了围巾，绑好车包，还未骑，光是收拾这会儿就已经有些腿冷。我感觉是又降温了，遂放弃，上楼放下围巾手套等，乖乖骑到地铁站为止。</p>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="pagination-container">
-      
-      
-        <a href="/page/2/" class="next">下一页 <i class="icon icon-arrow-ios-forward-outline"></i></a>
-      
+        </div>
+        <div class="top-div">
+          
+        </div>
+      </div>
     </div>
 
-
-
+    <!-- 
+      <div class="next-post">
+        <a class="purple-link" href="/2023/01/07/2023-01-07-ri-ji/">
+          <h3 class="post-title">
+            下一篇：2023-01-07日记
+          </h3>
+        </a>
+      </div>
+     -->
   </div>
+
+
+  <div id="gitalk-container"></div>
+
+
 
 <footer>
 <div class="site-footer">
@@ -208,9 +178,31 @@
 
 
 
+    <script>window.is_post = true;</script>
+
 
 <script src="/js/main.js"></script>
 
+
+
+    <script src="/js/gitalk.min.js"></script>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'e452846c760e4f6fd6a7',
+    clientSecret: '9cd28d8b30dd90280f3adaa0fcd6ebc3309e97a3',
+    repo: 'gitalk',
+    owner: 'yangqun-git',
+    admin: ['yangqun-git'],
+    id: location.pathname.slice(1, location.pathname.lastIndexOf('/')).substring(0, 49),       // Ensure uniqueness and length less than 50
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    createIssueManually: true,
+  });
+
+  gitalk.render('gitalk-container')
+
+</script>
 
 
 
@@ -218,5 +210,4 @@
     </div>
   </body>
 </html>
-
 

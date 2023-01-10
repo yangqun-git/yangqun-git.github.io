@@ -8,9 +8,11 @@
 
 <meta charset="utf-8" >
 
-<title>yangqunjava</title>
-<meta name="keywords" content="yangqunjava, yangqunjava">
-<meta name="description" content="yangqunjava">
+<title>2023-01-07日记</title>
+<meta name="keywords" content="2023-01-07日记, yangqunjava">
+<meta name="description" content="起床后去我与佳乐去老邪家吃了午饭，老邪炖了肘子，炒了我爱吃的尖椒肉丝，他对象还弄了个麻辣豆腐，菜菜皆是十分美味，我已经很久没有吃过这么撑了。
+吃完后坐床上闲叙了一阵，话题就围绕着吐槽工作而已。
+下午则去西单各大商场转了一圈，本想买个中长款羽">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -20,6 +22,8 @@
 
 <link rel="stylesheet" href="/style/jquery.fancybox.min.css">
 
+
+    <link rel="stylesheet" href="/style/gitalk.css" />
 
 
 
@@ -79,91 +83,52 @@
 
 
   <div class="content-container">
-
-    
-
-
-
-
-
-
-
-<section class="post-item">
-    <div class="content">
-      <a href="/2023/01/03/arraylist-iterator-yuan-ma-fen-xi-wei-shi-me-die-dai-qi-shan-chu-yuan-su-bu-hui-bao-cuo/">
-        <h2 class="post-title">ArrayList iterator源码分析，为什么迭代器删除元素不会报错</h2>
-      </a>
-      <a href="/2023/01/03/arraylist-iterator-yuan-ma-fen-xi-wei-shi-me-die-dai-qi-shan-chu-yuan-su-bu-hui-bao-cuo/">
-          <div class="post-abstract">
-            
-			    写这篇文章的原因要从前不久的一件事说起。
-有一天，朋友问我，“ArrayList遍历中删除元素会怎么样”？
-我当时脑子里第一想到的就是forEach这种循环方式，没多想就回答他：“当然会报错了。”
-朋友再问：“如果使用iterator迭代器
-            
-          </div>
-      </a>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2023-01-03</span>
+    <div class="post-detail">
+      
+      <h2 class="post-title">2023-01-07日记</h2>
+      <div class="post-info post-detail-info">
+        <span><i class="icon icon-calendar-outline"></i> 2023-01-07</span>
         
           <span>
-            <i class="icon icon-pricetags-outline"></i>
+          <i class="icon icon-pricetags-outline"></i>
             
-              <a href="/tags/ArrayList/">
-                ArrayList
-                
-                  ，
-                
-              </a>
-            
-              <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
-                源码分析
+              <a href="/tags/%E6%97%A5%E8%AE%B0/">
+              日记
                 
               </a>
             
           </span>
         
       </div>
-    </div>
-  </section>
+      <div class="post-content-wrapper">
+        <div class="post-content">
+          <p>起床后去我与佳乐去老邪家吃了午饭，老邪炖了肘子，炒了我爱吃的尖椒肉丝，他对象还弄了个麻辣豆腐，菜菜皆是十分美味，我已经很久没有吃过这么撑了。</p>
+<p>吃完后坐床上闲叙了一阵，话题就围绕着吐槽工作而已。</p>
+<p>下午则去西单各大商场转了一圈，本想买个中长款羽绒服，奈何看来看去并没有满意的。中途试了个外套和卫衣比较满意，遂买下，花了500多。</p>
+<p>闲逛到了晚上七点多吃完饭，后回家。</p>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="pagination-container">
-      
-      
-        <a href="/page/2/" class="next">下一页 <i class="icon icon-arrow-ios-forward-outline"></i></a>
-      
+        </div>
+        <div class="top-div">
+          
+        </div>
+      </div>
     </div>
 
-
-
+    <!-- 
+      <div class="next-post">
+        <a class="purple-link" href="/2023/01/04/2023-01-04-ri-ji/">
+          <h3 class="post-title">
+            下一篇：2023-01-04日记
+          </h3>
+        </a>
+      </div>
+     -->
   </div>
+
+
+  <div id="gitalk-container"></div>
+
+
 
 <footer>
 <div class="site-footer">
@@ -208,9 +173,31 @@
 
 
 
+    <script>window.is_post = true;</script>
+
 
 <script src="/js/main.js"></script>
 
+
+
+    <script src="/js/gitalk.min.js"></script>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'e452846c760e4f6fd6a7',
+    clientSecret: '9cd28d8b30dd90280f3adaa0fcd6ebc3309e97a3',
+    repo: 'gitalk',
+    owner: 'yangqun-git',
+    admin: ['yangqun-git'],
+    id: location.pathname.slice(1, location.pathname.lastIndexOf('/')).substring(0, 49),       // Ensure uniqueness and length less than 50
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    createIssueManually: true,
+  });
+
+  gitalk.render('gitalk-container')
+
+</script>
 
 
 
@@ -218,5 +205,4 @@
     </div>
   </body>
 </html>
-
 
